@@ -5,18 +5,17 @@ This blueprint is for using the air conditioner automatically in both winter and
 - Window status check 
 - Water level control in the tank 
 - Home presence control 
-- Notifications (English and Italian)
+- Notifications
 - Decide on the time slot for operation
 
 Below the settings for operation are:
 
-1) **Select language**: Choose the language for notifications (default: Italian). 
-2) **Entities climate**: Choose the climate entity to be used. 
-3) **Select season**: Choose the season of use (default: Summer)
-4) **Set temperature climate**: Select the temperature to be set at the climate 
-5) **Hvac modes**: Select hvac usage mode (heat, cool, dry, fan\_only)
-6) **Fan modes**: Select the fan usage mode (auto, high, mid, low). In case your climate settings are different from mine, these can be customized from the source file.
-7) **Presence Home**: OPTIONAL Select from the list the group created with person entities for: 
+1) **Entities climate**: Choose the climate entity to be used.
+2) **Set temperature sensor**: Select the external temperature sensor to be used for the climate  
+3) **Set temperature climate**: Select the temperature to be set at the climate 
+4) **Hvac modes**: Select hvac usage mode (heat, cool, dry, fan\_only)
+5) **Fan modes**: Select the fan usage mode (auto, high, mid, low). In case your climate settings are different from mine, these can be customized from the source file.
+6) **Presence Home**: OPTIONAL Select from the list the group created with person entities for: 
 - Turn on the air conditioner if the conditions set for startup are met
 - Turn off the air conditioner at the time when you switch to the not\_home state
 ```
@@ -39,9 +38,7 @@ group:
 14) **Stop time**: Set the time for automatic climate operation end time and shutdown time. NB: If you want the climate to be automatic h24, set Start time and Stop time with the time 00:00:00.
 15) **Device to notify push**: OPTIONAL select the device on which you want to receive the push notification. The device must have the official HomeAssistant app installed.
 
-This blueprint was made respecting my personal needs and climate entities that are used with Broadlink. 
-
-I remain open to feedback and any ideas to make this blueprint more usable for everyone.
+This blueprint was made with respect to my personal needs and devices. 
 
 [![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fkarpaterna%2FAutomatic-air-conditioner%2Fblob%2Fmain%2Fautomatic_air_conditioner.yaml)
 

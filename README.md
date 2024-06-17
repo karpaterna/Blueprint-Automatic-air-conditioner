@@ -23,8 +23,8 @@ Below the settings for operation are:
 group:
   famiglia:
     entities:
-      - person.marco
-      - person.serena
+      - person.one
+      - person.two
 ```
 8) **Water level**. OPTIONAL: Select the binary\_sensor used to indicate full water tank. To function, it must be set with *device\_class: moisture*.
 9) **Window**: OPTIONAL select the binary sensor used for the window contact. To function, it must be set with *device\_class: window*
@@ -43,6 +43,6 @@ This blueprint was made respecting my personal needs and climate entities that a
 
 I remain open to feedback and any ideas to make this blueprint more usable for everyone.
 
-[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fmarco-hacs%2FAutomatic-air-conditioner%2Fblob%2Fmain%2Fautomatic_air_conditioner.yaml)
+[![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fkarpaterna%2FAutomatic-air-conditioner%2Fblob%2Fmain%2Fautomatic_air_conditioner.yaml)
 
 https://community.home-assistant.io/t/automatic-air-conditioner/511251

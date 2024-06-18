@@ -1,6 +1,6 @@
 blueprint:
   name: Automatic air conditioner for summer, monitoring presence, window status, water level, time slot and external temperature sensor.
-  description:  "`- Version: 1.2 -`\n\n This blueprint is for using the air conditioner automatically in the summer, based on a start and end temperature. 
+  description:  "`- Version: 1.3 -`\n\n This blueprint is for using the air conditioner automatically in the summer, based on a start and end temperature. 
 
           Optionally, you can enable:
 
@@ -242,7 +242,7 @@ action:
       before: !input stop_time
     - "{{ states(presence_home) == 'home' or presence_home == 'group.presence_home_disabled'}}"
     - or: 
-      - "{{ (trigger.id == 'climate_on' or trigger.id == 'window'or (trigger.id == 'presence_home' and trigger.to_state.state == 'home')) and (state_attr('sensor.temp_7_obyvka_battery','temperature')|float(1) > target_temperature_start|float(1) )}}"
+      - "{{ (trigger.id == 'climate_on' or trigger.id == 'window'or (trigger.id == 'presence_home' and trigger.to_state.state == 'home')) and (state_attr('sensor.temp_7_obyvka_battery','temperature')|float(1)) > target_temperature_start|float(1) )}}"
   then:
       - alias: Window control
         if: 
@@ -263,7 +263,7 @@ action:
             type: notify
             device_id: !input notify_device
             title: "Klima"
-            message: "Klima pustena, je {{state_attr('sensor.temp_7_obyvka_battery','temperature')|float(1))}}°"
+            message: "Klima pustena, je {{state_attr('sensor.temp_7_obyvka_battery','temperature')|float(1)}}°"
         else:
           - domain: mobile_app
             type: notify
@@ -275,7 +275,7 @@ action:
     - "{{not is_state(climate,'off')}}"
     - or: 
       - "{{ trigger.id == 'presence_home' and trigger.to_state.state == 'not_home'}}"
-      - "{{ trigger.id == 'climate_off' and (state_attr('sensor.temp_7_obyvka_battery','temperature')|float(1) < target_temperature_stop|float(1) )}}"
+      - "{{ trigger.id == 'climate_off' and (state_attr('sensor.temp_7_obyvka_battery','temperature')|float(1)) < target_temperature_stop|float(1) )}}"
       - "{{ trigger.id == 'climate_off' and trigger.platform == 'time'}}"
       - "{{ trigger.id == 'window' and is_state(window,'on')}}"
       - "{{ trigger.id == 'moisture_climate_off' }}"

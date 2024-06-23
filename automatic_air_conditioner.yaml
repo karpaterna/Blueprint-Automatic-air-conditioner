@@ -1,6 +1,6 @@
 blueprint:
   name: Automatic air conditioner for summer, monitoring presence, window status, water level, time slot and external temperature sensor.
-  description:  "`- Version: 1.4 -`\n\n This blueprint is for using the air conditioner automatically in the summer, based on a start and end temperature. 
+  description:  "`- Version: 1.5 -`\n\n This blueprint is for using the air conditioner automatically in the summer, based on a start and end temperature. 
 
           Optionally, you can enable:
 
@@ -248,6 +248,7 @@ action:
       after: !input start_time
       before: !input stop_time
     - "{{ states(presence_home) == 'home' or presence_home == 'group.presence_home_disabled'}}"
+    - "{{is_state(moisture,'off')}}"
     - or: 
       - "{{ (trigger.id == 'moisture_climate_on' or trigger.id == 'climate_on' or trigger.id == 'window'or (trigger.id == 'presence_home' and trigger.to_state.state == 'home')) and (state_attr('sensor.temp_7_obyvka_battery','temperature')|float(1) > target_temperature_start|float(1) )}}"
   then:

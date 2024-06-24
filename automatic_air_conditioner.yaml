@@ -1,24 +1,9 @@
 blueprint:
   name: Automatic air conditioner for summer, monitoring presence, window status, water level, time slot and external temperature sensor.
-  description:  "`- Version: 1.5 -`\n\n This blueprint is for using the air conditioner automatically in the summer, based on a start and end temperature. 
-
-          Optionally, you can enable:
-
-          - External temperature sensor
-
-          - Window status check
-          
-          - Water level control in the tank
-          
-          - Home presence control
-          
-          - Notifications
-          
-          - Decide on the time slot for operation"
-
+  description:  "`- Version: 1.51 -`\n\n This blueprint is for using the air conditioner automatically in the summer, based on a start and end temperature. 
+          Extra features: External temperature sensor, Window status check, Water level control in the tank, Home presence control, Notifications, Decide on the time slot for operation"
   domain: automation
   input:
-
     climate:
       name: Entity climate
       description: 'Select climate entity to be used.'
@@ -27,7 +12,6 @@ blueprint:
           filter:
             domain: climate
           multiple: false
-
     temperature:
       name: Entity temperature sensor
       description: 'Select external temperature sensor entity to be used.'
@@ -37,7 +21,6 @@ blueprint:
             domain: sensor
             device_class: temperature
           multiple: false
-
     set_temperature_climate:
       name: Set temperature climate
       default: 25
@@ -49,7 +32,6 @@ blueprint:
           unit_of_measurement: °C
           mode: slider
           step: 0.1
-
     hvac_modes:
       name: Hvac modes
       description: 'Select the mode to be set to the air conditioner.'
@@ -61,7 +43,6 @@ blueprint:
             - cool
             - dry
             - fan_only
-
     fan_modes:
       name: Fan modes
       description: 'Select the ventilation speed to be set at the air conditioner.'
@@ -74,7 +55,6 @@ blueprint:
             - high
             - low
             - mid
-
     presence_home:
       name: Presence Home
       description: 'Select the group consisting of person..'
@@ -82,7 +62,6 @@ blueprint:
       selector:
         entity:
           domain: group
-
     moisture:
       name: Water level
       default: binary_sensor.moisture_disabled
@@ -91,7 +70,6 @@ blueprint:
         entity:
           domain: binary_sensor
           device_class: moisture
-
     window:
       name: Window
       default: binary_sensor.window_disabled
@@ -100,7 +78,6 @@ blueprint:
         entity:
           domain: binary_sensor
           device_class: window
-
     target_temperature_start:
       name: Target temperature start
       default: 25
@@ -112,7 +89,6 @@ blueprint:
           unit_of_measurement: °C
           mode: slider
           step: 0.1
-
     target_temperature_stop:
       name: Target temperature stop
       default: 21
@@ -124,7 +100,6 @@ blueprint:
           unit_of_measurement: °C
           mode: slider
           step: 0.1
-
     delay_temperature_stop:
       default: 10
       name: Delay temperature stop
@@ -136,21 +111,18 @@ blueprint:
           unit_of_measurement: min
           mode: slider
           step: 1
-
     start_time:
       name: Start time
       default: "00:00:00"
       description: 'Set automatic operation start time.'
       selector:
         time: 
-
     stop_time:
       name: Stop time
       default: "00:00:00"
       description: 'Set automatic operation end time.'
       selector:
         time: 
-
     notify_device:
       name: Device to notify push
       default: false
@@ -158,7 +130,6 @@ blueprint:
       selector:
         device: 
           integration: mobile_app
-
 mode: parallel
 variables:
   target_temperature_start: !input target_temperature_start
@@ -243,14 +214,14 @@ action:
       message: "Klima ma plnu bandasku, automaticky sa vypne za 5 minut."
 - alias: Turn air conditioner on
   if:
-    - "{{is_state(climate,'off')}}"
+    - "{{ is_state(climate, 'off') }}"
     - condition: time
       after: !input start_time
       before: !input stop_time
-    - "{{ states(presence_home) == 'home' or presence_home == 'group.presence_home_disabled'}}"
-    - "{{is_state(moisture,'off')}}"
-    - or: 
-      - "{{ (trigger.id == 'moisture_climate_on' or trigger.id == 'climate_on' or trigger.id == 'window'or (trigger.id == 'presence_home' and trigger.to_state.state == 'home')) and (state_attr('sensor.temp_7_obyvka_battery','temperature')|float(1) > target_temperature_start|float(1) )}}"
+    - "{{ states(presence_home) == 'home' or presence_home == 'group.presence_home_disabled' }}"
+    - "{{ is_state(moisture, 'off') }}"
+    - "{{ state_attr('sensor.temp_7_obyvka_battery', 'temperature')|float(1) > target_temperature_start|float(1) }}"
+    - "{{ trigger.id in ['moisture_climate_on', 'climate_on', 'window', 'presence_home'] and trigger.to_state.state == 'home' }}"
   then:
       - alias: Window control
         if: 
@@ -295,7 +266,7 @@ action:
         type: notify
         device_id: !input notify_device
         title: "Klima"
-        message: "{% if trigger.id == 'window' %} Klima sa vypla, lebo bolo otvorene okno.
-                  {% elif (trigger.id == 'climate_off' or trigger.id == 'presence_home')%} Automaticke vypnutie klimy.
-                  {% elif trigger.id == 'moisture_climate_off' %} Klima sa vypla, treba vyliat vodu.
+        message: "{% if trigger.id == 'window' %}Klima sa vypla, lebo bolo otvorene okno.
+                  {% elif trigger.id in ['climate_off', 'presence_home'] %}Automaticke vypnutie klimy.
+                  {% elif trigger.id == 'moisture_climate_off' %}Klima sa vypla, treba vyliat vodu.
                   {% endif %}"

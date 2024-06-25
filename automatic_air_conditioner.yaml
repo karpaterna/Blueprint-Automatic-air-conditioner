@@ -1,6 +1,6 @@
 blueprint:
   name: Automatic air conditioner for summer, monitoring presence, window status, water level, time slot and external temperature sensor.
-  description:  "`- Version: 1.51 -`\n\n This blueprint is for using the air conditioner automatically in the summer, based on a start and end temperature. 
+  description:  "`- Version: 1.52 -`\n\n This blueprint is for using the air conditioner automatically in the summer, based on a start and end temperature. 
           Extra features: External temperature sensor, Window status check, Water level control in the tank, Home presence control, Notifications, Decide on the time slot for operation"
   domain: automation
   input:
@@ -138,6 +138,7 @@ variables:
   target_temperature_stop: !input target_temperature_stop
   window: !input window
   presence_home: !input presence_home
+  moisture: !input moisture
 trigger:
 - platform: state
   entity_id: !input moisture

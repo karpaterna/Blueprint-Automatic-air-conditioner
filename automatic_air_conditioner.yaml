@@ -1,6 +1,6 @@
 blueprint:
   name: Automatic air conditioner for summer, monitoring presence, window status, water level, time slot and external temperature sensor.
-  description:  "`- Version: 1.52 -`\n\n This blueprint is for using the air conditioner automatically in the summer, based on a start and end temperature. 
+  description:  "`- Version: 1.53 -`\n\n This blueprint is for using the air conditioner automatically in the summer, based on a start and end temperature. 
           Extra features: External temperature sensor, Window status check, Water level control in the tank, Home presence control, Notifications, Decide on the time slot for operation"
   domain: automation
   input:
@@ -222,7 +222,7 @@ action:
     - "{{ states(presence_home) == 'home' or presence_home == 'group.presence_home_disabled' }}"
     - "{{ is_state(moisture, 'off') }}"
     - "{{ state_attr('sensor.temp_7_obyvka_battery', 'temperature')|float(1) > target_temperature_start|float(1) }}"
-    - "{{ trigger.id in ['moisture_climate_on', 'climate_on', 'window', 'presence_home'] and trigger.to_state.state == 'home' }}"
+    - "{{ trigger.id in ['moisture_climate_on', 'climate_on', 'window'] or (trigger.id == 'presence_home' and trigger.to_state.state == 'home') }}"
   then:
       - alias: Window control
         if: 

@@ -157,7 +157,7 @@ trigger:
   from: 'on'
   to: 'off'
   for:
-    minutes: 5
+    minutes: 1
   id: moisture_climate_on
 - platform: numeric_state
   entity_id: !input temperature

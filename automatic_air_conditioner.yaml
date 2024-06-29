@@ -1,6 +1,6 @@
 blueprint:
   name: Automatic air conditioner for summer, monitoring presence, window status, water level, time slot and external temperature sensor.
-  description:  "`- Version: 1.6 -`\n\n This blueprint is for using the air conditioner automatically in the summer, based on a start and end temperature. 
+  description:  "`- Version: 1.7 -`\n\n This blueprint is for using the air conditioner automatically in the summer, based on a start and end temperature. 
           Extra features: External temperature sensor, Window status check, Water level control in the tank, Home presence control, Notifications, Decide on the time slot for operation"
   domain: automation
   input:
@@ -21,6 +21,15 @@ blueprint:
             domain: sensor
             device_class: temperature
           multiple: false
+    out_temperature:
+      name: Entity outdoors temperature sensor
+      description: 'Select outdoors temperature sensor entity to be used.'
+      selector:
+        entity:
+          filter:
+            domain: sensor
+            device_class: temperature
+          multiple: false          
     set_temperature_climate:
       name: Set temperature climate
       default: 25
@@ -139,6 +148,7 @@ variables:
   window: !input window
   presence_home: !input presence_home
   moisture: !input moisture
+  out_temperature: !input out_temperature
 trigger:
 - platform: state
   entity_id: !input moisture
@@ -216,7 +226,6 @@ action:
       before: !input stop_time
     - "{{ states(presence_home) == 'home' or presence_home == 'group.presence_home_disabled' }}"
     - "{{ is_state(moisture, 'off') }}"
-    - "{{ state_attr(temperature,'temperature')|float(1) > target_temperature_start|float(1) }}"
     - "{{ trigger.id in ['moisture_climate_on', 'climate_on', 'window'] or (trigger.id == 'presence_home' and trigger.to_state.state == 'home') }}"
   then:
       - alias: Window control
@@ -238,7 +247,7 @@ action:
             type: notify
             device_id: !input notify_device
             title: "Klima"
-            message: "Klima pustena, je {{state_attr(temperature,'temperature')|float(1)}}°"
+            message: "Klima pustena, je {{state_attr(temperature,'temperature')|float(1)}}° a vonku {{state_attr(out_temperature,'temperature')|float(1)}}°"
         else:
           - domain: mobile_app
             type: notify
@@ -263,6 +272,6 @@ action:
         device_id: !input notify_device
         title: "Klima"
         message: "{% if trigger.id == 'window' %}Klima sa vypla, lebo bolo otvorene okno.
-                  {% elif trigger.id in ['climate_off', 'presence_home'] %}Automaticke vypnutie klimy.
+                  {% elif trigger.id in ['climate_off', 'presence_home'] %}Automaticke vypnutie klimy, je {{state_attr(temperature,'temperature')|float(1)}}° a vonku {{state_attr(out_temperature,'temperature')|float(1)}}°.
                   {% elif trigger.id == 'moisture_climate_off' %}Klima sa vypla, treba vyliat vodu.
                   {% endif %}"

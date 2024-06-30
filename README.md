@@ -1,12 +1,14 @@
 # Automatic-air-conditioner
 
-This blueprint is for using the air conditioner automatically in both winter and summer, based on a start and end temperature. In modo facoltativo, si può abilitare:
+This blueprint is for using the air conditioner automatically ňbased on a start and end temperature. 
 
 - Window status check 
 - Water level control in the tank 
 - Home presence control 
 - Notifications
 - Decide on the time slot for operation
+- External sensor for indoor temperature and outdoor temperature
+- Climate adjust mode
 
 Below the settings for operation are:
 
@@ -41,5 +43,3 @@ group:
 This blueprint was made with respect to my personal needs and devices. 
 
 [![Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fkarpaterna%2FAutomatic-air-conditioner%2Fblob%2Fmain%2Fautomatic_air_conditioner.yaml)
-
-https://community.home-assistant.io/t/automatic-air-conditioner/511251

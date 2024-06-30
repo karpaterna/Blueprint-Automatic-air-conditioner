@@ -285,7 +285,8 @@ action:
             message: "Klima sa nepustila, je otvorene okno."
 - alias: Adjust climate temperature
   if:
-      -or:
+      - "{{not is_state(climate,'off')}}"
+      - or:
         - "{{ trigger.id == 'adjust_temperature' }}"
         - "{{ trigger.id == 'climate_off' and (states(out_temperature) | float(1) > feels_like_threshold | float(1)) }}"
   then:

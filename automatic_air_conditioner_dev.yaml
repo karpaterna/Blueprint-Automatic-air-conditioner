@@ -1,6 +1,6 @@
 blueprint:
   name: DEV - Automatic air conditioner for summer, monitoring presence, window status, water level, time slot and external temperature sensor.
-  description:  "DEV - `- Version: 1.81 -`\n\n This blueprint is for using the air conditioner automatically in the summer, based on a start and end temperature. 
+  description:  "DEV - `- Version: 1.82 -`\n\n This blueprint is for using the air conditioner automatically in the summer, based on a start and end temperature. 
           Extra features: External temperature sensor, Window status check, Water level control in the tank, Home presence control, Notifications, Decide on the time slot for operation"
   domain: automation
   input:
@@ -287,7 +287,7 @@ action:
   if:
       - "{{not is_state(climate,'off')}}"
       - or:
-        - "{{ trigger.id == 'adjust_temperature' }}"
+        - "{{ trigger.id == 'climate_adjust' }}"
         - "{{ trigger.id == 'climate_off' and (states(out_temperature) | float(1) > feels_like_threshold | float(1)) }}"
   then:
   - service: climate.set_temperature
@@ -299,7 +299,7 @@ action:
     device_id: !input notify_device
     title: "Klima"
     message: "{% if trigger.id == 'climate_off' %}Klima sa stisila namiesto vypnutia, vonku je moc teplo - {{states(out_temperature)|float(1)}}°.
-                  {% elif trigger.id == 'adjust_temperature' %}Klima sa stisila.
+                  {% elif trigger.id == 'climate_adjust' %}Klima sa stisila.
                   {% endif %}"
 - alias: Turn air conditioner off
   if: 

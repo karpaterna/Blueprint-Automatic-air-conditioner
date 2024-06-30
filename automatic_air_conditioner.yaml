@@ -1,12 +1,12 @@
 blueprint:
-  name: Automatic air conditioner for summer, monitoring presence, window status, water level, time slot and external temperature sensor.
-  description:  "`- Version: 1.8 -`\n\n This blueprint is for using the air conditioner automatically in the summer, based on a start and end temperature. 
-          Extra features: External temperature sensor, Window status check, Water level control in the tank, Home presence control, Notifications, Decide on the time slot for operation"
+  name: Automatic air conditioner for summer, monitoring presence, window status, water level, time slot, external temperature sensor, outdoor temperature sensor and controlling climate adjustments.
+  description:  "`- Version: 1.9 -`\n\n This blueprint is for using the air conditioner automatically in the summer, based on a start and end temperature. 
+          Extra features: External temperature sensor, Window status check, Water level control in the tank, Home presence control, Notifications, Decide on the time slot for operation, Outdoor temperature sensor, Tempering climate adjustments"
   domain: automation
   input:
     climate:
       name: Entity climate
-      description: 'Select climate entity to be used.'
+      description: 'Select air conditioning climate entity to be used.'
       selector:
         entity:
           filter:
@@ -30,28 +30,6 @@ blueprint:
             domain: sensor
             device_class: temperature
           multiple: false
-    target_temperature_adjust:
-      name: Target Temperature for Adjusting Climate target temperature
-      default: 24
-      description: 'Set the temperature threshold where the climate target temperature will be increased by 1 degree instead of turning off.'
-      selector:
-        number:
-          min: 20
-          max: 30
-          unit_of_measurement: °C
-          mode: slider
-          step: 0.1
-    feels_like_threshold:
-      name: Feels Like Temperature Threshold
-      default: 30
-      description: 'Set the outside temperature threshold for not turning off the air conditioner but adjusting the climate temperature by 1 degree.'
-      selector:
-        number:
-          min: 20
-          max: 35
-          unit_of_measurement: °C
-          mode: slider
-          step: 0.1
     set_temperature_climate:
       name: Set temperature climate
       default: 25
@@ -86,13 +64,18 @@ blueprint:
             - high
             - low
             - mid
-    presence_home:
-      name: Presence Home
-      description: 'Select the group consisting of person..'
-      default: group.presence_home_disabled
+    fan_modes_adjust:
+      name: Fan modes for climate adjust on low temperature
+      description: 'Select the ventilation speed to be set at the air conditioner for adjusting while tempering.'
+      default: low
       selector:
-        entity:
-          domain: group
+        select:
+          mode: dropdown
+          options:
+            - auto
+            - high
+            - low
+            - mid
     moisture:
       name: Water level
       default: binary_sensor.moisture_disabled
@@ -111,7 +94,7 @@ blueprint:
           device_class: window
     target_temperature_start:
       name: Target temperature start
-      default: 25
+      default: 24.7
       description: 'Set the startup target temperature.'
       selector:
         number:
@@ -122,7 +105,7 @@ blueprint:
           step: 0.1
     target_temperature_stop:
       name: Target temperature stop
-      default: 21
+      default: 23.5
       description: 'Set the target temperature for shutdown.'
       selector:
         number:
@@ -132,7 +115,7 @@ blueprint:
           mode: slider
           step: 0.1
     delay_temperature_stop:
-      default: 10
+      default: 5
       name: Delay temperature stop
       description: 'Set the climate shutdown delay since the target temperature has been reached.'
       selector:
@@ -142,6 +125,39 @@ blueprint:
           unit_of_measurement: min
           mode: slider
           step: 1
+    target_temperature_adjust_low:
+      name: Low Target Temperature for Adjusting Climate
+      default: 23.9
+      description: 'Set the temperature threshold where the climate will be adjusted, either target temperature will be increased by 1 degree or fan mode will be switched to low, instead of turning off.'
+      selector:
+        number:
+          min: 20
+          max: 30
+          unit_of_measurement: °C
+          mode: slider
+          step: 0.1
+    target_temperature_adjust_high:
+      name: High Target Temperature for Adjusting Climate
+      default: 24.4
+      description: 'Set the temperature threshold where the climate will be adjusted, either target temperature will be decreased by 1 degree or fan mode will be switched to auto.'
+      selector:
+        number:
+          min: 20
+          max: 30
+          unit_of_measurement: °C
+          mode: slider
+          step: 0.1      
+    feels_like_threshold:
+      name: Feels Like Temperature Threshold
+      default: 30
+      description: 'Set the outside temperature threshold for not turning off the air conditioner but adjusting the climate temperature by 1 degree.'
+      selector:
+        number:
+          min: 20
+          max: 35
+          unit_of_measurement: °C
+          mode: slider
+          step: 0.1
     start_time:
       name: Start time
       default: "00:00:00"
@@ -161,6 +177,13 @@ blueprint:
       selector:
         device: 
           integration: mobile_app
+    presence_home:
+      name: Presence Home
+      description: 'Select the group consisting of person..'
+      default: group.presence_home_disabled
+      selector:
+        entity:
+          domain: group
 mode: parallel
 variables:
   target_temperature_start: !input target_temperature_start
@@ -171,7 +194,8 @@ variables:
   presence_home: !input presence_home
   moisture: !input moisture
   out_temperature: !input out_temperature 
-  target_temperature_adjust: !input target_temperature_adjust
+  target_temperature_adjust_low: !input target_temperature_adjust_low
+  target_temperature_adjust_high: !input target_temperature_adjust_high
   feels_like_threshold: !input feels_like_threshold
 trigger:
 - platform: state
@@ -208,8 +232,13 @@ trigger:
 - platform: numeric_state
   entity_id: !input temperature
   attribute: temperature
-  below: !input target_temperature_adjust
-  id: climate_adjust
+  below: !input target_temperature_adjust_low
+  id: climate_adjust_low
+- platform: numeric_state
+  entity_id: !input temperature
+  attribute: temperature
+  above: !input target_temperature_adjust_high
+  id: climate_adjust_high
 - platform: numeric_state
   entity_id: !input temperature
   attribute: temperature
@@ -283,23 +312,39 @@ action:
             device_id: !input notify_device
             title: "Klima"
             message: "Klima sa nepustila, je otvorene okno."
-- alias: Adjust climate temperature
+- alias: Adjust climate on low temp
   if:
       - "{{not is_state(climate,'off')}}"
       - or:
-        - "{{ trigger.id == 'climate_adjust' }}"
+        - "{{ trigger.id == 'climate_adjust_low' }}"
         - "{{ trigger.id == 'climate_off' and (states(out_temperature) | float(1) > feels_like_threshold | float(1)) }}"
   then:
-  - service: climate.set_temperature
+  - service: climate.set_fan_mode
     data:
       entity_id: !input climate
-      temperature: "{{ state_attr(climate, 'temperature') | float(1) + 1 }}"
+      fan_mode: !input fan_modes_adjust
   - domain: mobile_app
     type: notify
     device_id: !input notify_device
     title: "Klima"
     message: "{% if trigger.id == 'climate_off' %}Klima sa stisila namiesto vypnutia, vonku je moc teplo - {{states(out_temperature)|float(1)}}°.
-                  {% elif trigger.id == 'climate_adjust' %}Klima sa stisila.
+                  {% elif trigger.id == 'climate_adjust' %}Klima sa stisila namiesto vypnutia.
+                  {% endif %}"
+- alias: Adjust climate on high temp
+  if:
+      - "{{not is_state(climate,'off')}}"
+      - or:
+        - "{{ trigger.id == 'climate_adjust_high' }}"
+  then:
+  - service: climate.set_fan_mode
+    data:
+      entity_id: !input climate
+      fan_mode: !input fan_modes
+  - domain: mobile_app
+    type: notify
+    device_id: !input notify_device
+    title: "Klima"
+    message: "{% if trigger.id == 'climate_adjust_high' %}Klima znova pridala, aby sa byt rychlo neprehrial.
                   {% endif %}"
 - alias: Turn air conditioner off
   if: 

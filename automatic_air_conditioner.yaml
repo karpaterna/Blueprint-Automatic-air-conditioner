@@ -1,6 +1,6 @@
 blueprint:
   name: Automatic air conditioner for summer, monitoring presence, window status, water level, time slot and external temperature sensor.
-  description:  "`- Version: 1.7 -`\n\n This blueprint is for using the air conditioner automatically in the summer, based on a start and end temperature. 
+  description:  "`- Version: 1.75 -`\n\n This blueprint is for using the air conditioner automatically in the summer, based on a start and end temperature. 
           Extra features: External temperature sensor, Window status check, Water level control in the tank, Home presence control, Notifications, Decide on the time slot for operation"
   domain: automation
   input:
@@ -247,7 +247,7 @@ action:
             type: notify
             device_id: !input notify_device
             title: "Klima"
-            message: "Klima pustena, je {{state_attr(temperature,'temperature')|float(1)}}° a vonku {{state_attr(out_temperature,'temperature')|float(1)}}°"
+            message: "Klima pustena, je {{state_attr(temperature,'temperature')|float(1)}}° a vonku {{states(out_temperature)|float(1)}}°"
         else:
           - domain: mobile_app
             type: notify
@@ -272,6 +272,6 @@ action:
         device_id: !input notify_device
         title: "Klima"
         message: "{% if trigger.id == 'window' %}Klima sa vypla, lebo bolo otvorene okno.
-                  {% elif trigger.id in ['climate_off', 'presence_home'] %}Automaticke vypnutie klimy, je {{state_attr(temperature,'temperature')|float(1)}}° a vonku {{state_attr(out_temperature,'temperature')|float(1)}}°.
+                  {% elif trigger.id in ['climate_off', 'presence_home'] %}Automaticke vypnutie klimy, je {{state_attr(temperature,'temperature')|float(1)}}° a vonku {{states(out_temperature)|float(1)}}°.
                   {% elif trigger.id == 'moisture_climate_off' %}Klima sa vypla, treba vyliat vodu.
                   {% endif %}"

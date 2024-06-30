@@ -1,6 +1,6 @@
 blueprint:
   name: Automatic air conditioner for summer, monitoring presence, window status, water level, time slot and external temperature sensor.
-  description:  "`- Version: 1.75 -`\n\n This blueprint is for using the air conditioner automatically in the summer, based on a start and end temperature. 
+  description:  "`- Version: 1.8 -`\n\n This blueprint is for using the air conditioner automatically in the summer, based on a start and end temperature. 
           Extra features: External temperature sensor, Window status check, Water level control in the tank, Home presence control, Notifications, Decide on the time slot for operation"
   domain: automation
   input:
@@ -29,7 +29,29 @@ blueprint:
           filter:
             domain: sensor
             device_class: temperature
-          multiple: false          
+          multiple: false
+    target_temperature_adjust:
+      name: Target Temperature for Adjusting Climate target temperature
+      default: 24
+      description: 'Set the temperature threshold where the climate target temperature will be increased by 1 degree instead of turning off.'
+      selector:
+        number:
+          min: 20
+          max: 30
+          unit_of_measurement: °C
+          mode: slider
+          step: 0.1
+    feels_like_threshold:
+      name: Feels Like Temperature Threshold
+      default: 30
+      description: 'Set the outside temperature threshold for not turning off the air conditioner but adjusting the climate temperature by 1 degree.'
+      selector:
+        number:
+          min: 20
+          max: 35
+          unit_of_measurement: °C
+          mode: slider
+          step: 0.1
     set_temperature_climate:
       name: Set temperature climate
       default: 25
@@ -148,7 +170,9 @@ variables:
   window: !input window
   presence_home: !input presence_home
   moisture: !input moisture
-  out_temperature: !input out_temperature
+  out_temperature: !input out_temperature 
+  target_temperature_adjust: !input target_temperature_adjust
+  feels_like_threshold: !input feels_like_threshold
 trigger:
 - platform: state
   entity_id: !input moisture
@@ -181,6 +205,11 @@ trigger:
   for: 
     minutes: !input delay_temperature_stop
   id: climate_off
+- platform: numeric_state
+  entity_id: !input temperature
+  attribute: temperature
+  below: !input target_temperature_adjust
+  id: climate_adjust
 - platform: numeric_state
   entity_id: !input temperature
   attribute: temperature
@@ -254,12 +283,29 @@ action:
             device_id: !input notify_device
             title: "Klima"
             message: "Klima sa nepustila, je otvorene okno."
+- alias: Adjust climate temperature
+  if:
+      -or:
+        - "{{ trigger.id == 'adjust_temperature' }}"
+        - "{{ trigger.id == 'climate_off' and (states(out_temperature) | float(1) > feels_like_threshold | float(1)) }}"
+  then:
+  - service: climate.set_temperature
+    data:
+      entity_id: !input climate
+      temperature: "{{ state_attr(climate, 'temperature') | float(1) + 1 }}"
+  - domain: mobile_app
+    type: notify
+    device_id: !input notify_device
+    title: "Klima"
+    message: "{% if trigger.id == 'climate_off' %}Klima sa stisila namiesto vypnutia, vonku je moc teplo - {{states(out_temperature)|float(1)}}°.
+                  {% elif trigger.id == 'adjust_temperature' %}Klima sa stisila.
+                  {% endif %}"
 - alias: Turn air conditioner off
   if: 
     - "{{not is_state(climate,'off')}}"
     - or: 
       - "{{ trigger.id == 'presence_home' and trigger.to_state.state == 'not_home'}}"
-      - "{{ trigger.id == 'climate_off' and (state_attr(temperature,'temperature')|float(1) < target_temperature_stop|float(1) )}}"
+      - "{{ trigger.id == 'climate_off' and (state_attr(temperature,'temperature')|float(1) < target_temperature_stop|float(1)) and (states(out_temperature) | float(1) <= feels_like_threshold | float(1)) }}"
       - "{{ trigger.id == 'climate_off' and trigger.platform == 'time'}}"
       - "{{ trigger.id == 'window' and is_state(window,'on')}}"
       - "{{ trigger.id == 'moisture_climate_off' }}"

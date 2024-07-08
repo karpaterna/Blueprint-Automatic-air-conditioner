@@ -1,6 +1,6 @@
 blueprint:
   name: Automatic air conditioner for summer, monitoring presence, window status, water level, time slot, external temperature sensor, outdoor temperature sensor and controlling climate adjustments.
-  description:  "`- Version: 1.92 -`\n\n This blueprint is for using the air conditioner automatically in the summer, based on a start and end temperature. 
+  description:  "`- Version: 1.93 -`\n\n This blueprint is for using the air conditioner automatically in the summer, based on a start and end temperature. 
           Extra features: External temperature sensor, Window status check, Water level control in the tank, Home presence control, Notifications, Decide on the time slot for operation, Outdoor temperature sensor, Tempering climate adjustments"
   domain: automation
   input:
@@ -326,7 +326,7 @@ action:
     - choose:
         - conditions:
             - condition: template
-              value_template: "{{ trigger.id in []'climate_off'] }}"
+              value_template: "{{ trigger.id in ['climate_off'] }}"
           sequence:
             - domain: mobile_app
               type: notify
